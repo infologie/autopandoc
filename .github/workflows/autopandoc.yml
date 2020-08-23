@@ -1,0 +1,35 @@
+name: autopandoc
+on: push
+jobs:
+  convert_via_pandoc:
+    runs-on: ubuntu-18.04
+    steps:
+      - uses: actions/checkout@v2
+      - run: mkdir output
+      - uses: docker://pandoc/core:2.9
+        with:
+          args: >-
+            --filter pandoc-citeproc
+            --bibliography references.bib
+            --csl iso690-author-date-fr-no-abstract.csl
+            --metadata link-citations=true
+            --from markdown+ascii_identifiers
+            --to html5
+            -c stylesheet.css
+            --standalone
+            --self-contained
+            --output output/article.html
+            article.md
+      - uses: docker://pandoc/core:2.9
+        with:
+          args: >-
+            --filter pandoc-citeproc
+            --bibliography references.bib
+            --csl iso690-author-date-fr-no-abstract.csl
+            --reference-doc=template.docx
+            --output output/article.docx
+            article.md
+      - uses: actions/upload-artifact@master
+        with:
+          name: output
+          path: output
